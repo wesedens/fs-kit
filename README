@@ -1,0 +1,244 @@
+		   The File System Construction Kit
+			     version 0.4
+			       12/3/98
+
+			  Dominic Giampaolo
+			      dbg@be.com
+
+
+INTRODUCTION:
+
+Welcome to the File System Construction Kit!  This is a software
+package that accompanies the book, Practical File System Design, which
+I wrote and is published by Morgan Kaufmann (ISBN 1558604979).
+
+This package is a very simple framework in which you can experiment
+with a working (but simple) file system implementation.  The framework
+is designed so that you can go in and modify one part of it, such as
+how the used and free disk blocks are managed, and not have to touch
+the rest of the file system.  And because the package creates its file
+system inside of a normal file on your hard disk, you don't have to
+have a spare disk or require special (root) privileges to run the
+program.  The goal is that this package should provide a convenient
+test bed for trying out new file system ideas without having to go
+through the pain and difficulty of creating a real kernel based file
+system.  The API is generic enough however that after an you debug
+your implementation within this framework it could be moved to a real
+kernel based file system for the BeOS or a Unix like operating system.
+
+This package contains several parts.  There is the core file system
+implementation, a kernel-like interface (complete with a full vnode
+layer, etc) and several test programs that use the kernel-like api to
+manipulate the file system.  The three programs included are: "makefs"
+which can create a file system, "tstfs" which is a simple stress test
+that creates, writes to, and deletes files, and "fsh", a file system
+shel that lets you interactively manipulate your file system.
+
+
+BUILDING IT:
+
+The package should compile and build right out of the box on most
+versions of Unix and the BeOS.  It has been tested on the following
+systems:
+
+   BeOS/PPC Release 4
+   BeOS/Intel Release 4
+   Solaris (sparc) 5.5.1
+   Solaris (x86) 2.6
+   FreeBSD (x86) 2.2.2
+   Linux (x86) 2.1.57
+   Irix 6.5
+
+so it should be reasonably portable.  To build it just type "make".
+The result of the build should be three programs, mkfs, tstfs and fsh.
+If your compiler doesn't like the flags "-O7" which is in the
+makefile, just change that to be -O3 or whatever you want (Irix users
+will have to change this).
+
+
+USING IT:
+
+To use the package you have to first create a file in which you will
+create a file system.  By default the tools expect a file name called 
+"big_file"   On Unix you can create an empty file by doing this:
+
+     dd if=/dev/zero of=big_file bs=524288 count=32
+
+That will create a 16 megabyte file called "big_file" in the current
+directory.
+
+All the tools treat the file "big_file" like a raw disk device.
+
+After you have created "big_file" you need to initialize a file system
+in it.  The tool "makefs" does this.  If you just run makefs it will
+go ahead and initialize the file big_file with the sample file
+system.  
+
+After initializing the file system, you can test it out with "fsh",
+the file system shell.  Just run fsh and it will give you a prompt:
+
+   fsh>>
+
+You can type "help" to find out what commands are available.  Here is
+a summary of a a few of the more useful commands:
+
+    dir - get an "ls -l" style directory listing
+   make - create a file which you can then read and write to with "rd"
+          and "wr"
+     rd - read some data from the file.  you can optionally specify
+          how many bytes to read (default is 256).
+     wr - write some data to a file.  you can optionally specify
+          how many bytes to write (default is 256). the data written
+          is generated automatically.
+  close - close the currently open file
+   open - open the named file
+ lat_fs - perform a test similar to the LmBench test "lat_fs" (ie.
+          create and delete files of various sizes).
+ create - create the number of file specified (default 100)
+  rmall - remove all the files in a directory.  optionally you can
+          name a directory and it will only remove the files in that
+          directory.
+     cp - copy data to or from the file system and the host file
+          system.  the syntax is as follows:
+
+          Copy data from the host file system into myfs:
+
+               cp :host-file-name  myfs-filename
+
+          Copy data from myfs to the host file system:
+
+               cp myfs-file-name :host-file-name
+
+          The leading ":" indicates which file is the host file.
+          NOTE: copying around inside of myfs is not supported.
+ 
+   
+The last program, tstfs, is a simple stress test.  Basically you just
+run it and it will go off and randomly create and delete files in the
+file system.  After it is done there will be a bunch of files left
+over.  You can then run fsh to look at what it created.
+
+    
+
+A TOUR OF THE SOURCES:
+
+The API is not quite as it was described in the appendix of the book
+Practical File System Design.  That's because I hadn't written the kit
+until after the book was published.  It still follows the appendix
+pretty closely however.
+
+Here are the sources that you'll find.
+
+The test programs:
+-----------------
+    makefs.c
+    fsh.c
+    tstfs.c
+
+The core file system code for "myfs":
+-------------------------------------
+    bitmap.c
+    bitvector.c
+    dir.c
+    dstream.c
+    file.c
+    inode.c
+    io.c
+    journal.c
+    util.c
+    mount.c
+
+The supporting infra-structure (vnode layer, disk cache, etc):
+--------------------------------------------------------------
+    cache.c
+    initfs.c
+    kernel.c
+    rootfs.c
+
+
+Miscellaneous support routines and porting bits:
+------------------------------------------------
+    argv.c
+    hexdump.c
+    sl.c
+    stub.c
+    sysdep.c
+
+If you don't have "dd" for some reason:
+---------------------------------------
+    mkfile.c
+
+
+
+MODIFYING IT:
+
+Each of the major components of the file system (block management,
+inode management, data stream reading and writing, directory
+management, file management, etc) are broken out into individual
+source files.  As long as you maintain the api defined by the
+corresponding header file, the rest of the file system should continue
+to work.  So for example if you wanted to change how directories store
+their contents, you could go modify dir.c, change it as you see fit,
+recompile and the rest of the file system will continue to work.
+
+The master header file for file system data structures is myfs.h.
+Basically any data structure that you want to modify is in there.
+
+
+NOTES ABOUT THE IMPLEMENTATION:
+
+This is a very simple file system.  It is definitely not fast and
+isn't intended to be a commercial quality file system.  It is intended
+to be easy to go in and modify.  As an example of how simple it is,
+every time a directory is modified, its entire contents are read into
+memory, the changes made and the entire contents written back out.  I
+chose to do it this way so it would be easier to understand and
+modify. Clearly I didn't do it to be fast.
+
+The file system has a single super block, a simple used/free block
+bitmap, an i-node bitmap, and an inode table.  The rest of the disk is
+for storing user data.  
+
+The layout of the file system is as follows:
+
+   +---------------------------------------------------------------
+   | super | block  | inode  | inode |  user 
+   | block | bitmap | bitmap | table |  data.....
+   +---------------------------------------------------------------
+
+Files store their data using a simple block list of direct, indirect
+and double indirect blocks.  The data stream code (currently) does not
+support growing into the double-indirect blocks of a file (it's still
+on the to-do list).
+
+There is no journaling support currently.  I will probably add this
+sometime later.  It takes a bit of work and I wanted to get the
+package out as opposed to having it sit on my hard disk for another
+month or so.  Currently there is no safe ordering for disk writes
+since when I implement journaling that won't matter anyway.
+
+There is no real locking done although that's not such an issue since
+it really isn't intended to be run in a multi-threaded environment.
+The vnode layer does implement correct locking although on a Unix
+system unless you fix stub.c, the locks don't really do much (except
+tell you if try to lock an already locked lock which should never
+happen on a single threaded system).  The vnode layer is actually part
+of an early version of the BeOS vnode layer written by Cyril
+Meurillon.  The real BeOS vnode layer is much larger and more complex
+of course.
+
+The cache code is the real Release 4 BeOS disk cache code.  The cache
+code can support a real BFS style journal implementation so that
+should ease adding journaling support to myfs.  
+
+Oh, I also have not implemented the myfs_rename function yet.  That
+will be coming shortly.
+
+
+REPORTING BUGS:
+
+If you fix a bug in the package, I'd like to hear about it.  I can't
+really help debug everyone's file system but if you discover a problem
+with the package or get it working on another OS, I'd like to hear
+about it.  E-mail me at: dbg@be.com
+
