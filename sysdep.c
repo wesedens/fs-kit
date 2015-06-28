@@ -24,7 +24,7 @@
 int
 device_is_read_only(const char *device)
 {
-#ifdef unix
+#if defined(unix) || defined(__APPLE__)
     return 0;   /* XXXdbg should do an ioctl or something */
 #else
     int             fd;
@@ -43,7 +43,7 @@ device_is_read_only(const char *device)
 int
 get_device_block_size(int fd)
 {
-#ifdef unix
+#if defined(unix) || defined(__APPLE__)
     return 512;   /* XXXdbg should do an ioctl or something */
 #else
     struct stat     st;
@@ -63,7 +63,7 @@ get_device_block_size(int fd)
 fs_off_t
 get_num_device_blocks(int fd)
 {
-#ifdef unix
+#if defined(unix) || defined(__APPLE__)
     struct stat st;
     
     fstat(fd, &st);    /* XXXdbg should be an ioctl or something */
@@ -90,7 +90,7 @@ get_num_device_blocks(int fd)
 int
 device_is_removeable(int fd)
 {
-#ifdef unix
+#if defined(unix) || defined(__APPLE__)
     return 0;   /* XXXdbg should do an ioctl or something */
 #else
     struct stat     st;
@@ -111,7 +111,7 @@ device_is_removeable(int fd)
 int
 lock_removeable_device(int fd, bool on_or_off)
 {
-#if defined(unix) || defined(USER)
+#if defined(unix) || defined(__APPLE__) || defined(USER)
     return 0;   /* XXXdbg should do an ioctl or something */
 #else
     return ioctl(fd, B_SCSI_PREVENT_ALLOW, &on_or_off);
@@ -307,7 +307,7 @@ free_mlock(mlock *l)
 }
 
 
-#ifdef unix
+#if defined(unix) || defined(__APPLE__)
 #include <sys/time.h>
 
 bigtime_t

@@ -838,7 +838,7 @@ do_help(int argc, char **argv)
 }
 
 static char *
-getline(char *prompt, char *input, int len)
+getline2(char *prompt, char *input, int len)
 {
     printf("%s", prompt); fflush(stdout);
 
@@ -854,7 +854,7 @@ do_fsh(void)
     char  input[512], **argv;
     cmd_entry *cmd;
 
-    while(getline(prompt, input, sizeof(input)) != NULL) {
+    while(getline2(prompt, input, sizeof(input)) != NULL) {
         argc = 0;
         argv = build_argv(input, &argc);
         if (argv == NULL || argc == 0) {
