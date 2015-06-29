@@ -46,23 +46,13 @@
 #include <unistd.h>
 
 
-#ifdef __BEOS__
-#include <OS.h>
-#include <KernelExport.h>
-#endif
-
 #include "compat.h"
 #include "lock.h"
 #include "cache.h"
 
 
 
-#ifndef USER
-#define printf dprintf
-#endif
-#ifdef USER
 #define kprintf printf
-#endif
 
 
 /* forward prototypes */
@@ -424,10 +414,6 @@ init_block_cache(int max_blocks, int flags)
     add_debugger_command("bcache", do_dump, "dump the block cache list");
     add_debugger_command("fblock", do_find_block, "find a block in the cache");
     add_debugger_command("fdata",  do_find_data, "find a data block ptr in the cache");
-#endif
-
-#ifndef USER
-    register_kernel_daemon(cache_flusher, NULL, 3);
 #endif
 
     return 0;
@@ -1073,10 +1059,6 @@ shutdown_block_cache(void)
 
     if (bc.lock.s > 0)
         LOCK(bc.lock);
-
-#ifndef USER
-    unregister_kernel_daemon(cache_flusher, NULL);
-#endif
 
     delete_cache_list(&bc.normal);
     delete_cache_list(&bc.locked);

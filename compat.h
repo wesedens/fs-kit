@@ -23,20 +23,14 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <errno.h>
 #include <memory.h>
 #include <string.h>
 #include <fcntl.h>
 #include <time.h>
 
-#ifdef __BEOS__
-#include <OS.h>              /* for typedefs and prototypes */
-#include <image.h>           /* for a few typedefs */
-#include <Drivers.h>         /* for various ioctl structs, etc */
-#include <iovec.h>           /* because we're boneheads sometimes */
-#else
 #include <sys/uio.h>
-#endif
 
 
 /*
@@ -50,14 +44,15 @@
         4 different formats now: %Ld (BeOS and Linux), %qd (FreeBSD),
         %lld (Irix) and %I64d (NT).
 */
-#define OFF_T_SIZE 4
+
+#define OFF_T_SIZE (__SIZEOF_POINTER__)
 
 #if OFF_T_SIZE == 4
-typedef long fs_off_t;
-typedef long my_ino_t;
+typedef int32_t fs_off_t;
+typedef int32_t my_ino_t;
 #elif OFF_T_SIZE == 8
-typedef long long fs_off_t;
-typedef long long my_ino_t;
+typedef int64_t fs_off_t;
+typedef int64_t my_ino_t;
 #else
 #error OFF_T_SIZE must be either 4 or 8.
 #endif
@@ -156,20 +151,19 @@ struct my_stat {
 #define FALSE 0
 #endif
 
-#ifndef __BEOS__
-typedef long               sem_id;
-typedef unsigned char      uchar;
-typedef short              int16;
-typedef unsigned short     uint16;
-typedef int                int32;
-typedef unsigned int       uint32;
+typedef int*               sem_id;
+typedef uint8_t            uchar;
+typedef int16_t            int16;
+typedef uint16_t           uint16;
+typedef int32_t            int32;
+typedef uint32_t           uint32;
 #define ulong unsigned long         /* make it a #define to avoid conflicts */
-typedef long long          int64;
-typedef unsigned long long uint64;
+typedef int64_t            int64;
+typedef uint64_t           uint64;
 typedef unsigned int       port_id;
 typedef int                bool;
 typedef int                image_id;
-typedef long long          bigtime_t;
+typedef int64_t            bigtime_t;
 typedef long               thread_id;
 typedef long               status_t;
 
@@ -190,7 +184,6 @@ ssize_t    readv_pos(int fd, fs_off_t _pos, struct iovec *iov, int count);
 ssize_t    writev_pos(int fd, fs_off_t _pos, struct iovec *iov,  int count);
 
 
-#endif /* __BEOS__ */
 
 void     panic(const char *msg, ...);
 int      device_is_read_only(const char *device);

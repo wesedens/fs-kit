@@ -104,14 +104,10 @@ device_is_removeable(int fd)
 #endif
 }
 
-#if defined(__BEOS__) && !defined(USER)
-#include "scsi.h"
-#endif
-
 int
 lock_removeable_device(int fd, bool on_or_off)
 {
-#if defined(unix) || defined(__APPLE__) || defined(USER)
+#if defined(unix) || defined(__APPLE__)
     return 0;   /* XXXdbg should do an ioctl or something */
 #else
     return ioctl(fd, B_SCSI_PREVENT_ALLOW, &on_or_off);
@@ -121,7 +117,6 @@ lock_removeable_device(int fd, bool on_or_off)
 
 
 
-#ifndef __BEOS__
 ssize_t
 read_pos(int fd, fs_off_t _pos, void *data,  size_t nbytes)
 {
@@ -165,16 +160,7 @@ write_pos(int fd, fs_off_t _pos, const void *data,  size_t nbytes)
 }
 
 
-#ifdef sun                      /* bloody wankers */
-#include <sys/stream.h>
-#ifdef DEF_IOV_MAX
-#define MAX_IOV  DEF_IOV_MAX
-#else
-#define MAX_IOV  16
-#endif
-#else                         /* the rest of the world... */
 #define MAX_IOV  8192         /* something way bigger than we'll ever use */
-#endif
 
 ssize_t
 readv_pos(int fd, fs_off_t _pos, struct iovec *iov, int count)
@@ -246,9 +232,6 @@ writev_pos(int fd, fs_off_t _pos, struct iovec *iov,  int count)
     return amt;
 }
 
-
-
-#endif /* __BEOS__ */
 
 
 #include <stdarg.h>

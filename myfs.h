@@ -36,7 +36,7 @@ typedef my_ino_t inode_addr;
 #if OFF_T_SIZE == 4
 #define NUM_DIRECT_BLOCKS   20
 #elif OFF_T_SIZE == 8
-#define NUM_DIRECT_BLOCKS   8
+#define NUM_DIRECT_BLOCKS   6
 #endif
 
 /*

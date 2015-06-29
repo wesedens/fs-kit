@@ -5,7 +5,7 @@ all : $(TARGETS)
 #
 # change the -O7 to -O3 if your compiler doesn't grok -O7
 #
-CFLAGS = -DUSER=1 -g -O0
+CFLAGS = -g -O0
 
 SUPPORT_OBJS = rootfs.o initfs.o kernel.o cache.o sl.o stub.o
 MISC_OBJS    = sysdep.o util.o hexdump.o argv.o

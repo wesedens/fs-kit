@@ -17,7 +17,6 @@
 
 #include "myfs.h"
 
-#ifndef __BEOS__ 
 
 void
 unload_kernel_addon(aid)
@@ -112,5 +111,3 @@ snooze(bigtime_t f)
     sleep(1);
     return 1;
 }
-
-#endif  /* __BEOS__ */

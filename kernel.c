@@ -439,9 +439,7 @@ find_vn(int argc, char **argv)
 
 /* ---------------------------------------------------------------- */
 
-#ifdef USER
 int memsize = 8 * 1024 * 1024;
-#endif
 
 int
 init_vnode_layer(void)
@@ -548,7 +546,6 @@ init_vnode_layer(void)
 
 
 #ifdef DEBUG
-
     add_debugger_cmd("ioctx",   dump_ioctx,   "dump a thread ioctx struct");
     add_debugger_cmd("vnode",   dump_vnode,   "dump a vnode struct");
     add_debugger_cmd("fdarray", dump_fdarray, "dump an fd array");
